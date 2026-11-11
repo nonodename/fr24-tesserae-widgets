@@ -17,7 +17,7 @@
   "screenshot_sizes": ["lg", "md", "sm", "xs"],
   "release": {
     "version": "0.3.0",
-    "tarball_url": "https://github.com/nonodename/fr24-tesserae-widget/archive/refs/tags/v0.3.0.tar.gz",
+    "tarball_url": "https://github.com/nonodename/fr24-tesserae-widgets/archive/refs/tags/v0.3.0.tar.gz",
     "sha256": "the-sha256-from-step-3"
   },
   "source": "https://github.com/nonodename/fr24-tesserae-widgets"
