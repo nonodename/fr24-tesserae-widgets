@@ -1,0 +1,47 @@
+{
+  "tesserae_compat": "1.x",
+  "name": "fr24_node",
+  "version": "0.3.0",
+  "kind": "widget",
+  "description": "The nearest tracked aircraft from a Flightradar24 feeder on your network: callsign, altitude and when it was last heard, plus the airline, route and aircraft type from adsbdb.com and the airline's logo from soaringsymbols.org. Lower aircraft win, since nearness counts altitude as well as ground distance.",
+  "icon": "ph-airplane-tilt",
+  "category": "transport",
+  "supports": {
+    "sizes": [
+      "xs",
+      "sm",
+      "md",
+      "lg"
+    ]
+  },
+  "cell_options": [
+    {
+      "name": "node_url",
+      "type": "string",
+      "label": "Radar node",
+      "default": "http://192.0.2.10:8754/flights.json",
+      "help": "The feeder's flights.json address, usually http://<feeder>:8754/flights.json."
+    },
+    {
+      "name": "home_lat",
+      "type": "number",
+      "label": "Latitude",
+      "default": 45.0000,
+      "help": "Where you're watching from, in decimal degrees (north is positive)."
+    },
+    {
+      "name": "home_lon",
+      "type": "number",
+      "label": "Longitude",
+      "default": -95.0000,
+      "help": "Decimal degrees, east is positive, so west of Greenwich is negative."
+    }
+  ],
+  "render": {
+    "dither": "none",
+    "needs_network": true
+  },
+  "requires": [
+    "network:*"
+  ]
+}

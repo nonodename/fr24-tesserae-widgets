@@ -1,4 +1,26 @@
 {
   "version": 1,
-  "widgets": []
+  "widgets": [
+{
+  "id": "fr24_node",
+  "name": "Flightradar 24 Node",
+  "description": "Integrate with your Flightradar 24 feeder node to show the latest aircraft.",
+  "icon": "ph-airplane-tilt",
+  "author": {
+    "name": "Dan Bennett",
+    "github": "nonodename"
+  },
+  "tags": ["flight_tracking", "utility"],
+  "kind": "widget",
+  "tesserae_compat": "1.x",
+  "official": false,
+  "screenshot_sizes": ["lg", "md", "sm", "xs"],
+  "release": {
+    "version": "0.3.0",
+    "tarball_url": "https://github.com/nonodename/fr24-tesserae-widget/archive/refs/tags/v0.3.0.tar.gz",
+    "sha256": "the-sha256-from-step-3"
+  },
+  "source": "https://github.com/nonodename/fr24-tesserae-widgets"
+}
+]
 }
