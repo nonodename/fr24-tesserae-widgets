@@ -10,7 +10,7 @@
     "name": "Dan Bennett",
     "github": "nonodename"
   },
-  "tags": ["flight_tracking", "utility"],
+  "tags": ["utility"],
   "kind": "widget",
   "tesserae_compat": "1.x",
   "official": false,
