@@ -5,7 +5,7 @@
   "kind": "widget",
   "description": "The nearest tracked aircraft from a Flightradar24 feeder on your network: callsign, altitude and when it was last heard, plus the airline, route and aircraft type from adsbdb.com and the airline's logo from soaringsymbols.org. Lower aircraft win, since nearness counts altitude as well as ground distance.",
   "icon": "ph-airplane-tilt",
-  "category": "transport",
+  "category": "utility",
   "supports": {
     "sizes": [
       "xs",
