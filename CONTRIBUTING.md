@@ -25,30 +25,10 @@ no widget sandbox yet.
    declare them in `widgets.json` with `"extra_screenshot_count": N`.
    The Browse card renders all N+1 shots as an inline carousel; entries
    without the field stay single-image.
-   If your widget is a front end for a service with a mark of its own
-   (Immich, a transit agency, a photo host), you can ship that mark at
-   `icons/<file>.svg` or `.png` and name it in your entry's `icon_asset`.
-   It then becomes the card image on Browse **in place of the
-   screenshot**, so reach for it when a screenshot wouldn't tell anyone
-   what the widget is: a widget that renders the user's own photo library
-   screenshots as one arbitrary photo, where the service's logo is the
-   thing people scan the grid for. A widget with a distinctive layout is
-   better served by its screenshot; ship the mark only if it beats one.
-   Still include the screenshot either way, it's required and used
-   elsewhere. Keep `icon` set too: an install that can't reach the
-   catalog falls back to the glyph. Only ship a logo you have the right
-   to redistribute; the project's own published asset is usually fine, a
-   proprietary app icon usually isn't.
 5. Open a PR to **this** repo (`tesserae-widgets`):
    - Add a `screenshots/<id>/lg.png` (plus any other sizes you shot).
    - Add a new entry to `widgets.json` with your widget metadata
-     (see schema below). *Add* to the file rather than re-serialising
-     it: writing it back out with `json.dump`'s default
-     `ensure_ascii=True` rewrites em-dashes, ellipses and accented
-     names in other people's entries as `\uXXXX`. The parsed values
-     don't change, so nothing breaks, but it churns entries your PR
-     never touched. CI rejects it; pass `ensure_ascii=False` if you
-     script the edit.
+     (see schema below).
    - Fill out the PR template.
 6. Wait for review. I'll read your widget's source end-to-end, focused
    on:

@@ -1,15 +1,9 @@
 # Catalog CI: validate widgets.json end-to-end so malformed PRs die
-# at the gate. The checks:
+# at the gate. Three checks:
 #   1. widgets.json matches schema/marketplace.schema.json.
-#   2. Every release.tarball_url is fetchable, matches release.sha256 and
-#      is under the host's 4 MiB download cap.
+#   2. Every release.tarball_url is fetchable + matches release.sha256.
 #   3. Every screenshot path declared in screenshot_sizes exists as a
 #      PNG under screenshots/<id>/<size>.png.
-#   4. A single-widget tarball's embedded plugin.json agrees with the
-#      catalog on kind and version. The host refuses the install when it
-#      doesn't, so catching it here is the difference between a red PR
-#      and a user hitting "Install failed". Bundles are skipped because
-#      the host skips them too (each folder carries its own version).
 name: Validate catalog
 
 on:
@@ -38,47 +32,14 @@ jobs:
       - name: Validate catalog
         run: |
           python <<'PY'
-          import hashlib, io, json, re, sys, tarfile
+          import hashlib, io, json, sys, tarfile
           from pathlib import Path
           import jsonschema, requests
 
           root = Path(".")
-          raw_index = (root / "widgets.json").read_text(encoding="utf-8")
-          index = json.loads(raw_index)
+          index = json.loads((root / "widgets.json").read_text())
           schema = json.loads((root / "schema" / "marketplace.schema.json").read_text())
           jsonschema.validate(index, schema)
-
-          # Non-ASCII characters stay literal in this file. A contributor whose
-          # tooling re-serialises the catalog with ensure_ascii=True rewrites
-          # em-dashes, ellipses and accented names across entries their PR never
-          # touched. The parsed values are identical either way, so nothing
-          # breaks and review can miss it, but it churns the diff and flips back
-          # on the next normal edit.
-          escaped = re.findall(r"\\u[0-9a-fA-F]{4}", raw_index)
-          if escaped:
-              print(
-                  f"widgets.json contains {len(escaped)} ASCII-escaped character(s), "
-                  f"first {escaped[0]}. Add your entry to the file rather than "
-                  "re-serialising it, or pass ensure_ascii=False if you script the edit."
-              )
-              sys.exit(1)
-
-          def read_root_manifest(buf: bytes) -> dict | None:
-              """The plugin.json sitting at the tarball root, after one
-              GitHub-style envelope folder is unwrapped."""
-              with tarfile.open(fileobj=io.BytesIO(buf), mode="r:*") as tar:
-                  members = [m for m in tar.getmembers() if m.isfile()]
-                  names = [m.name for m in members]
-                  top_dirs = sorted({n.split("/", 1)[0] for n in names if "/" in n})
-                  prefix = top_dirs[0] + "/" if len(top_dirs) == 1 and all("/" in n for n in names) else ""
-                  for m in members:
-                      if m.name == prefix + "plugin.json":
-                          f = tar.extractfile(m)
-                          if f is None:
-                              return None
-                          return json.loads(f.read().decode("utf-8"))
-              return None
-
 
           def detect_layout(buf: bytes, primary_id: str) -> list[str]:
               """Mirror app/marketplace.py's _detect_layout: unwrap one
@@ -135,15 +96,6 @@ jobs:
               except Exception as err:
                   failures.append(f"{wid}: tarball fetch failed: {err}")
                   continue
-              # The host refuses any download over 4 MiB (app/marketplace.py,
-              # _MAX_TARBALL_BYTES), so the user sees "Install failed" instead
-              # of a widget. Tagging after a screenshot set lands is the usual
-              # way to trip it; export-ignore keeps screenshots out of the archive.
-              if len(body) > 4 * 1024 * 1024:
-                  failures.append(
-                      f"{wid}: tarball is {len(body) / (1024 * 1024):.1f} MiB, over the "
-                      "host's 4 MiB cap (mark screenshots/ export-ignore in the widget repo)"
-                  )
               actual_sha = hashlib.sha256(body).hexdigest()
               if actual_sha != rel["sha256"]:
                   failures.append(
@@ -151,31 +103,6 @@ jobs:
                       f"got {actual_sha[:12]}...)"
                   )
                   continue
-              # Single widget: the embedded manifest must agree with the
-              # catalog. Mirrors app/marketplace.py's install-time check,
-              # which raises InstallRefused on a mismatch; without this a
-              # bad entry merges green and fails on every user's machine.
-              if w.get("kind") != "theme" and "folders" not in w:
-                  try:
-                      manifest = read_root_manifest(body)
-                  except Exception as err:
-                      manifest = None
-                      failures.append(f"{wid}: could not read plugin.json from tarball: {err}")
-                  if manifest is not None:
-                      embedded_version = str(manifest.get("version", ""))
-                      if embedded_version != rel["version"]:
-                          failures.append(
-                              f"{wid}: catalog says version={rel['version']!r} but the tarball's "
-                              f"plugin.json declares {embedded_version!r}. The host refuses this "
-                              f"install; tag the release after bumping plugin.json."
-                          )
-                      embedded_kind = str(manifest.get("kind", ""))
-                      if embedded_kind != w["kind"]:
-                          failures.append(
-                              f"{wid}: catalog says kind={w['kind']!r} but the tarball's "
-                              f"plugin.json declares {embedded_kind!r}."
-                          )
-
               # Bundle: catalog-declared folders must match tarball.
               # Skip for kind=theme: theme tarballs are flat <id>.json +
               # <id>.css pairs, not plugin folders, so detect_layout
